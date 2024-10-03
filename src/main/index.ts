@@ -1,5 +1,5 @@
 import { app, shell, BrowserWindow, Tray, Menu, screen, ipcMain } from 'electron'
-import { join } from 'path'
+import path, { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { MicaBrowserWindow, IS_WINDOWS_11, WIN10 } from 'mica-electron'
 import icon from '../../resources/icon.png?asset'
@@ -148,6 +148,15 @@ ipcMain.on('open-url', (_, url) => {
 // HardAcceleration
 app.commandLine.appendSwitch('enable-features', 'HardwareAcceleration')
 
+const exeName = path.basename(process.execPath)
+
+app.setLoginItemSettings({
+  openAtLogin: true,
+  openAsHidden: false,
+  path: process.execPath,
+  args: ['--processStart', `"${exeName}"`]
+})
+
 app.whenReady().then(() => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('app.floatsheep.timeWidget')
@@ -162,6 +171,23 @@ app.whenReady().then(() => {
   let instantiate = false
 
   const menuContext = Menu.buildFromTemplate([
+    {
+      type: 'checkbox',
+      label: '开机自启动',
+      checked: app.getLoginItemSettings().openAtLogin,
+      click: function () {
+        if (!app.isPackaged) {
+          app.setLoginItemSettings({
+            openAtLogin: !app.getLoginItemSettings().openAtLogin,
+            path: process.execPath
+          })
+        } else {
+          app.setLoginItemSettings({
+            openAtLogin: !app.getLoginItemSettings().openAtLogin
+          })
+        }
+      }
+    },
     {
       label: '设置',
       click: () => {
