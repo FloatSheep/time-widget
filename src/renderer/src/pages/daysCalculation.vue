@@ -26,7 +26,7 @@ const updateSettingsFromLocalStorage = () => {
 
     let newDayCalcSetting = '0 年 0 月 0 天'
     if (timeDiff > 0) {
-      const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24))
+      const days = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)) // 使用 Math.ceil 进行向上取整
       const years = Math.floor(days / 365)
       const months = Math.floor((days % 365) / 30)
       const remainingDays = days % 30
