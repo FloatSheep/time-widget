@@ -1,0 +1,50 @@
+@import 'lxgw-wenkai-screen-webfont/style.css';
+
+body {
+  font-family: 'LXGW WenKai Screen', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+html {
+  scrollbar-width: none;
+}
+
+#parent {
+  display: table;
+  width: 100%;
+  height: 100%;
+}
+
+.subText {
+  color: #949494e0;
+  font-weight: bold;
+  font-size: 30px;
+}
+
+.mainText {
+  color: #000000be;
+  font-weight: bold;
+  font-size: 32px;
+}
+
+#child {
+  vertical-align: middle;
+  text-align: center;
+  overflow: hidden;
+}
+
+.fixedButton {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+}
+
+:where(.css-dev-only-do-not-override-1t40dvj).ant-picker-dropdown .ant-picker-time-panel-column {
+  scrollbar-width: thin !important;
+  scrollbar-color: #8b8b8b #fff !important;
+}
+
+:where(.css-dev-only-do-not-override-1t40dvj).ant-picker .ant-picker-input > input, :where(.css-dev-only-do-not-override-1t40dvj).ant-typography code {
+  font-family: 'LXGW WenKai Screen', sans-serif;
+}
