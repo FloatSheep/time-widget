@@ -1,5 +1,5 @@
 import { app, shell, BrowserWindow, Tray, Menu, screen, ipcMain } from 'electron'
-import path, { join } from 'path'
+import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { MicaBrowserWindow, IS_WINDOWS_11, WIN10 } from 'mica-electron'
 import icon from '../../resources/icon.png?asset'
@@ -147,15 +147,6 @@ ipcMain.on('open-url', (_, url) => {
 
 // HardAcceleration
 app.commandLine.appendSwitch('enable-features', 'HardwareAcceleration')
-
-const exeName = path.basename(process.execPath)
-
-app.setLoginItemSettings({
-  openAtLogin: true,
-  openAsHidden: false,
-  path: process.execPath,
-  args: ['--processStart', `"${exeName}"`]
-})
 
 app.whenReady().then(() => {
   // Set app user model id for windows
