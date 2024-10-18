@@ -8,34 +8,22 @@ importers:
 
   .:
     dependencies:
-      '@ant-design/icons-vue':
-        specifier: ^7.0.1
-        version: 7.0.1(vue@3.5.10(typescript@5.6.2))
       '@electron-toolkit/preload':
         specifier: ^3.0.0
         version: 3.0.1(electron@31.6.0)
       '@electron-toolkit/utils':
         specifier: ^3.0.0
         version: 3.0.0(electron@31.6.0)
-      ant-design-vue:
-        specifier: ^4.2.5
-        version: 4.2.5(vue@3.5.10(typescript@5.6.2))
-      dayjs:
-        specifier: ^1.11.13
-        version: 1.11.13
       electron-updater:
         specifier: ^6.1.7
         version: 6.3.4
-      lxgw-wenkai-screen-webfont:
-        specifier: ^1.7.0
-        version: 1.7.0
       mica-electron:
         specifier: ^1.5.16
         version: 1.5.16
-      vue-router:
-        specifier: ^4.4.5
-        version: 4.4.5(vue@3.5.10(typescript@5.6.2))
     devDependencies:
+      '@ant-design/icons-vue':
+        specifier: ^7.0.1
+        version: 7.0.1(vue@3.5.10(typescript@5.6.2))
       '@electron-toolkit/eslint-config':
         specifier: ^1.0.2
         version: 1.0.2(eslint@8.57.1)
@@ -60,6 +48,12 @@ importers:
       '@vue/eslint-config-typescript':
         specifier: ^13.0.0
         version: 13.0.0(eslint-plugin-vue@9.28.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.6.2)
+      ant-design-vue:
+        specifier: ^4.2.5
+        version: 4.2.5(vue@3.5.10(typescript@5.6.2))
+      dayjs:
+        specifier: ^1.11.13
+        version: 1.11.13
       electron:
         specifier: ^31.0.2
         version: 31.6.0
@@ -75,6 +69,9 @@ importers:
       eslint-plugin-vue:
         specifier: ^9.26.0
         version: 9.28.0(eslint@8.57.1)
+      lxgw-wenkai-screen-webfont:
+        specifier: ^1.7.0
+        version: 1.7.0
       prettier:
         specifier: ^3.3.2
         version: 3.3.3
@@ -93,6 +90,9 @@ importers:
       vue:
         specifier: ^3.4.30
         version: 3.5.10(typescript@5.6.2)
+      vue-router:
+        specifier: ^4.4.5
+        version: 4.4.5(vue@3.5.10(typescript@5.6.2))
       vue-tsc:
         specifier: ^2.0.22
         version: 2.1.6(typescript@5.6.2)
