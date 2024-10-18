@@ -38,15 +38,15 @@ function createWindow(
     skipTaskbar: true // 移除任务栏图标
   })
 
-  // 设置窗口背景材料
+  // 设置窗口背景材料、圆角
   if (IS_WINDOWS_11) {
     mainWindow.setMicaEffect()
+    mainWindow.setRoundedCorner()
   } else if (WIN10) {
-    mainWindow.setBlur()
+    mainWindow.setAcrylic()
   }
 
-  // 圆角、基本设置
-  mainWindow.setRoundedCorner()
+  // 基本设置
   mainWindow.setMaximizable(false)
   mainWindow.setResizable(false)
   /*   mainWindow.webContents.openDevTools() */
@@ -221,15 +221,15 @@ app.whenReady().then(() => {
 
           settingWindow.setIgnoreMouseEvents(false)
 
-          // 设置窗口背景材料
+          // 设置窗口背景材料、圆角
           if (IS_WINDOWS_11) {
             settingWindow.setMicaEffect()
+            settingWindow.setRoundedCorner()
           } else if (WIN10) {
-            settingWindow.setBlur()
+            settingWindow.setAcrylic()
           }
 
-          // 圆角、基本设置
-          settingWindow.setRoundedCorner()
+          // 基本设置
           settingWindow.setMaximizable(false)
           settingWindow.setResizable(false)
           /*           settingWindow.webContents.openDevTools() */
