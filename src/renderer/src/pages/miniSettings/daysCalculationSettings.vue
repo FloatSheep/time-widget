@@ -34,7 +34,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div>
+  <div class="outContainer">
     <h2 class="mainText">日期计算配置</h2>
     <div class="configItem">
       <div class="configLeft">
@@ -68,7 +68,12 @@ onMounted(async () => {
   align-items: center;
   padding: 10px 0 10px 0;
 }
+
 .configLeft {
   margin-right: calc(800px - 540px);
+}
+
+.outContainer {
+  width: 100%;
 }
 </style>

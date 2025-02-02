@@ -1,5 +1,7 @@
 import { resolve } from 'path'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
+import Components from 'unplugin-vue-components/vite'
+import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers'
 import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
@@ -22,6 +24,13 @@ export default defineConfig({
             isCustomElement: (tag) => tag === 'center'
           }
         }
+      }),
+      Components({
+        resolvers: [
+          AntDesignVueResolver({
+            importStyle: false
+          })
+        ]
       })
     ],
     mode: 'production',

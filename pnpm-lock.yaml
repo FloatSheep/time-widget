@@ -17,6 +17,9 @@ importers:
       electron-updater:
         specifier: ^6.1.7
         version: 6.3.4
+      hono:
+        specifier: ^4.6.20
+        version: 4.6.20
       mica-electron:
         specifier: ^1.5.16
         version: 1.5.16
@@ -1507,6 +1510,10 @@ packages:
   he@1.2.0:
     resolution: {integrity: sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==}
     hasBin: true
+
+  hono@4.6.20:
+    resolution: {integrity: sha512-5qfNQeaIptMaJKyoJ6N/q4gIq0DBp2FCRaLNuUI3LlJKL4S37DY/rLL1uAxA4wrPB39tJ3s+f7kgI79O4ScSug==}
+    engines: {node: '>=16.9.0'}
 
   hosted-git-info@4.1.0:
     resolution: {integrity: sha512-kyCuEOWjJqZuDbRHzL8V93NzQhwIB71oFWSyzVo+KPZI+pnQPPxucdkrOZvkLRnrf5URsQM+IJ09Dw29cRALIA==}
@@ -4043,6 +4050,8 @@ snapshots:
     optional: true
 
   he@1.2.0: {}
+
+  hono@4.6.20: {}
 
   hosted-git-info@4.1.0:
     dependencies:

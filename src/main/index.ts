@@ -1,10 +1,18 @@
-import { app, shell, BrowserWindow, Tray, Menu, screen, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, Tray, Menu, screen, ipcMain, protocol } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { MicaBrowserWindow, IS_WINDOWS_11, WIN10 } from 'mica-electron'
 import icon from '../../resources/icon.png?asset'
+import { protocolApp } from './utils/protocolHandle'
+import requestMove from './utils/requestMove'
 
 global.globalInstantiated = false
+
+// 防止实例化多个窗口
+const gotTheLock = app.requestSingleInstanceLock()
+if (!gotTheLock) {
+  app.quit()
+}
 
 // 创建顶部窗口函数
 function createWindow(
@@ -16,7 +24,7 @@ function createWindow(
   alwaysTop: boolean = true
 ): void {
   const topOffset = 20
-  const movingDistance = -90
+  const movingDistance = -88
   const animationDuration = 500
 
   // Create the browser window.
@@ -66,11 +74,6 @@ function createWindow(
     mainWindow.show()
   })
 
-  /*   mainWindow.focus()
-  mainWindow.on('blur', () => mainWindow.focus())
-
-  mainWindow.setIgnoreMouseEvents(true, { forward: true }) */
-
   // 拦截新窗口打开事件
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
@@ -90,14 +93,38 @@ function createWindow(
     animateWindowPosition(mainWindow, xOffset, movingDistance, animationDuration)
   }, 3000) // 3秒
 
+  const lastMouseMoveTimestamps = new Map<string, number>()
+
   // ipc 进程通信（鼠标移动时显示窗口）
-  ipcMain.on('mouse-move', () => {
+  ipcMain.on('mouse-move', (_event, hash: string) => {
+    const currentTime = Date.now()
+    const lastTime = lastMouseMoveTimestamps.get(hash) || 0
+
+    // 如果当前时间与上次时间间隔小于200ms，则忽略本次事件
+    if (currentTime - lastTime < 500) {
+      return
+    }
+
+    // 更新时间戳并处理事件
+    lastMouseMoveTimestamps.set(hash, currentTime)
     clearTimeout(moveToTopTimeout) // 清除计时器
     animateWindowPosition(mainWindow, xOffset, yOffset + topOffset, animationDuration) // 移动到原来的位置
     moveToTopTimeout = setTimeout(() => {
-      animateWindowPosition(mainWindow, xOffset, movingDistance, animationDuration) // 再次设置计时器
+      if (!isMouseInWindow(mainWindow)) {
+        animateWindowPosition(mainWindow, xOffset, movingDistance, animationDuration) // 再次设置计时器
+      }
     }, 2000)
   })
+}
+
+// 判断鼠标是否在窗口范围内
+function isMouseInWindow(window: BrowserWindow): boolean {
+  const { x, y, width, height } = window.getBounds() // 获取窗口的边界信息
+  const cursorPoint = screen.getCursorScreenPoint() // 获取鼠标当前的全局屏幕坐标
+  const mouseX = cursorPoint.x
+  const mouseY = cursorPoint.y
+
+  return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height
 }
 
 // 缓动函数
@@ -107,7 +134,12 @@ function easeInOutQuart(x: number): number {
 }
 
 // 窗口移动动画
-function animateWindowPosition(window, targetX, targetY, duration) {
+function animateWindowPosition(
+  window: BrowserWindow,
+  targetX: number,
+  targetY: number,
+  duration: number
+) {
   const startX = window.getBounds().x
   const startY = window.getBounds().y
   const startTime = Date.now()
@@ -148,9 +180,32 @@ ipcMain.on('open-url', (_, url) => {
 // HardAcceleration
 app.commandLine.appendSwitch('enable-features', 'HardwareAcceleration')
 
+// 自定义 macaron:// 协议通信
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'macaron',
+    privileges: {
+      bypassCSP: true,
+      standard: true,
+      secure: true,
+      supportFetchAPI: true
+    }
+  }
+])
+
 app.whenReady().then(() => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('app.floatsheep.timeWidget')
+
+  // 处理自定义协议
+  protocol.handle('macaron', async (req) => {
+    const { url } = req
+    const newReq = new Request(
+      `http://localhost${url.split('macaron:/')[1]}`,
+      await requestMove(req)
+    )
+    return protocolApp.fetch(newReq) // 将请求转发给 Hono 处理
+  })
 
   // 初始化托盘
   const myTray = new Tray(icon)

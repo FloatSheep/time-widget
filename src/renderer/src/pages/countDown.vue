@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import dayjs from 'dayjs'
+import countDownAudio from '../assets/audio/countDown.wav'
 
 // 动态时间戳
 const DynamicTimestamp = ref<number>(0)
@@ -9,6 +10,10 @@ const DynamicTimestamp = ref<number>(0)
 const countDown = ref<string>('00:00')
 const totalSeconds = ref<number>(0)
 const countDownElement = ref<HTMLElement | null>(null)
+const progressWidth = ref(100)
+
+// 音频
+const audioRef = ref<HTMLAudioElement | null>(null)
 
 // 动态时间戳更新
 let animationFrameId: number
@@ -22,30 +27,54 @@ const formatTime = (seconds: number): string => {
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
 }
 
-// 更新倒计时
+// 初始化总秒数
+const initialTotalSeconds = ref(0)
+
+// 倒计时状态
+const noticed = ref(false)
+
+// 更新倒计时和进度条
 const updateCountDown = (currentTime: number) => {
   if (currentTime - lastTime >= 1000) {
     if (totalSeconds.value > 0) {
       totalSeconds.value -= 1
       countDown.value = formatTime(totalSeconds.value)
+      // 更新进度条宽度
+      progressWidth.value = Number(
+        ((totalSeconds.value / initialTotalSeconds.value) * 100).toFixed(2)
+      )
       lastTime = currentTime
     } else {
       // 倒计时结束
       countDown.value = '00:00:00'
+      progressWidth.value = 0 // 进度条归零
+      if (noticed.value === false) {
+        try {
+          audioRef.value?.load()
+          audioRef.value?.play()
+          noticed.value = true
+          // 直接调用 sendMouseMove
+          ;(window as unknown as theWindow).message.sendMouseMove()
+        } catch (err) {
+          console.error('Audio Error: ', err)
+        }
+      }
+
+      // 颜色变换
       if (countDownElement.value !== null) {
-        // 颜色变换
         countDownElement.value.style.color = '#CB5364'
         countDownElement.value.style.borderBottomColor = '#A23238'
 
         // 2秒后恢复
         const timeout = setTimeout(() => {
-          countDownElement.value!.style.color = '#000000be'
-          countDownElement.value!.style.borderBottomColor = '#7e7d7de0'
+          if (countDownElement.value !== null) {
+            countDownElement.value.style.color = '#000000be'
+            countDownElement.value.style.borderBottomColor = '#7e7d7de0'
+          }
           clearTimeout(timeout)
         }, 2000)
       }
-      // 下移窗口（这里偷懒直接用鼠标移动事件了）
-      ;(window as unknown as theWindow).message.sendMouseMove()
+
       cancelAnimationFrame(animationFrameId)
       return
     }
@@ -61,19 +90,22 @@ interface theWindow extends Window {
   }
 }
 
-// 开始倒计时
 const startCountDown = () => {
   const now = dayjs().toDate().getTime()
-  const initialTimestamp = DynamicTimestamp.value - now
-  totalSeconds.value = Math.floor(initialTimestamp / 1000)
-  if (totalSeconds.value < 0) {
+  const initialTimestamp = DynamicTimestamp.value
+
+  if (initialTimestamp <= now) {
+    DynamicTimestamp.value = now
     totalSeconds.value = 0
+  } else {
+    totalSeconds.value = Math.floor((initialTimestamp - now) / 1000)
   }
+
+  initialTotalSeconds.value = totalSeconds.value > 0 ? totalSeconds.value : 0
   countDown.value = formatTime(totalSeconds.value)
   animationFrameId = requestAnimationFrame(updateCountDown)
 }
 
-// 页面加载时开始倒计时
 onMounted(() => {
   const countdownTime = Number(localStorage.getItem('countDownTime'))
   if (!isNaN(countdownTime)) {
@@ -83,21 +115,32 @@ onMounted(() => {
   }
   startCountDown()
 
-  // 监听动态时间戳的变化
-  setInterval(() => {
-    const newCountdownTime = Number(localStorage.getItem('countDownTime'))
-    if (!isNaN(newCountdownTime) && newCountdownTime !== DynamicTimestamp.value) {
-      DynamicTimestamp.value = newCountdownTime
-      cancelAnimationFrame(animationFrameId)
-      startCountDown()
-      ;(window as unknown as theWindow).message.sendMouseMove()
+  // 更换音频
+  if (localStorage.getItem('customCountDownAudio') === 'true' && audioRef.value !== null) {
+    audioRef.value.src = 'macaron://api/countdownAudio'
+  }
+
+  // 监听 localStorage 变化
+  window.addEventListener('storage', (event) => {
+    if (event.key === 'countDownTime') {
+      const newCountdownTime = Number(event.newValue)
+      if (!isNaN(newCountdownTime) && newCountdownTime !== DynamicTimestamp.value) {
+        DynamicTimestamp.value = newCountdownTime
+        cancelAnimationFrame(animationFrameId)
+        startCountDown()
+      }
     }
-  }, 1000) // 每秒检查一次
+    if (event.key === 'customCountDownAudio') {
+      if (event.newValue === 'true' && audioRef.value !== null) {
+        audioRef.value.src = 'macaron://api/countdownAudio'
+      }
+    }
+  })
 })
 
-// 页面卸载时取消动画帧
 onUnmounted(() => {
   cancelAnimationFrame(animationFrameId)
+  window.removeEventListener('storage', () => {})
 })
 
 // 导出类型方便复用
@@ -110,29 +153,35 @@ export type { theWindow }
       <div class="subText">倒计时</div>
       <div class="mainText">
         <span ref="countDownElement" class="countInput">{{ countDown }}</span>
+        <div class="countDownProgressBar">
+          <div class="countDownProgressBarInstance" :style="{ width: progressWidth + '%' }"></div>
+        </div>
       </div>
+      <audio ref="audioRef" :src="countDownAudio" preload="auto" style="display: none"></audio>
     </div>
   </div>
 </template>
 
 <style scoped>
-.countInput {
-  border: none;
-  border-bottom: 2px solid #7e7d7de0;
-  outline: none;
-  font-size: 22.5px;
-  background-color: transparent;
-  transition: all 0.3s;
-  text-align: center;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'LXGW WenKai Screen', sans-serif;
-  color: #000000be;
+.countDownProgressBar {
+  height: 4px;
+  background-color: #e6e6e6;
+  width: 100%;
+  display: block;
+  border-radius: 4px;
+  overflow: hidden;
 }
 
-.countInput:focus {
-  border-bottom: 2px solid #000000be;
+.countDownProgressBarInstance {
+  background-color: #0f6cbd;
+  transition-timing-function: ease;
+  transition-duration: 0.3s;
+  transition-property: width;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.countInput {
+  transition: color 0.1s ease;
 }
 </style>

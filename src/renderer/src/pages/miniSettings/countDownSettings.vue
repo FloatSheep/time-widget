@@ -1,41 +1,79 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import dayjs, { Dayjs } from 'dayjs'
+import { theWindow } from '../countDown.vue'
+import type { UploadProps, UploadChangeParam } from 'ant-design-vue'
+import { UploadOutlined } from '@ant-design/icons-vue'
 
 // 倒计时时间
 // https://www.antdv.com/components/time-picker-cn
 const value = ref<Dayjs>(dayjs(new Date()))
 
+// 倒计时音频上传
+const fileList = ref<UploadProps['fileList']>([])
+const handleChange = (info: UploadChangeParam) => {
+  if (info.file.status === 'done') {
+    localStorage.setItem('customCountDownAudio', 'true')
+  }
+}
+
 // 获取配置
-const getConfig = async () => {
-  const time = await localStorage.getItem('countDownTime')
-  if (time !== undefined || time !== null || !time) {
+const getConfig = (): string | null => {
+  const time = localStorage.getItem('countDownTime')
+
+  if (time !== undefined && time !== null && time !== '') {
     return time
   }
   return null
 }
 
 // 保存配置
-const configSave = async () => {
+const configSave = () => {
   const normalDate = value.value.toDate()
-  await localStorage.setItem('countDownTime', normalDate.getTime().toString())
+  localStorage.setItem('countDownTime', normalDate.getTime().toString())
+  ;(window as unknown as theWindow).message.sendMouseMove()
 }
 
 // 挂载后加载配置
 onMounted(async () => {
-  const config = await getConfig()
+  const config = getConfig()
   if (config !== null) {
-    value.value = dayjs(Number(config))
+    const now = dayjs() // 当前时间
+    const targetTime = dayjs(Number(config)) // 时间戳对应的时间
+
+    // 判断时间戳是否已过期
+    if (targetTime.isAfter(now)) {
+      value.value = targetTime
+    } else {
+      // 如果时间已过期，更新为当前时间
+      value.value = now
+      localStorage.setItem('countDownTime', now.toDate().getTime().toString())
+    }
   }
 })
 </script>
 
 <template>
-  <div>
+  <div class="outContainer">
     <h2 class="mainText">倒计时配置</h2>
     <div class="configItem">
       <span class="configLeft">结束时间</span>
       <a-time-picker v-model:value="value" :style="{ border: '1px solid #616161c4' }" />
+    </div>
+    <div class="configItem" style="display: none">
+      <span class="configLeft">倒计时结束提示音</span>
+      <a-upload
+        v-model:file-list="fileList"
+        list-type="text"
+        :max-count="1"
+        action="macaron://api/upload"
+        @change="handleChange"
+      >
+        <a-button>
+          <upload-outlined></upload-outlined>
+          Upload
+        </a-button>
+      </a-upload>
     </div>
     <a-button type="primary" :class="'fixedButton'" @click="configSave">保存配置</a-button>
   </div>
@@ -49,8 +87,11 @@ onMounted(async () => {
   flex-direction: row;
   flex-wrap: nowrap;
   align-items: center;
+  padding: 10px 0 10px 0;
 }
-.configLeft {
-  margin-right: calc(800px - 520px);
+
+.outContainer {
+  width: 100%;
+  height: fit-content;
 }
 </style>

@@ -6,6 +6,7 @@ import countDownSettings from '@renderer/pages/miniSettings/countDownSettings.vu
 import daysCalculationSettings from '@renderer/pages/miniSettings/daysCalculationSettings.vue'
 import miniSettingsIndex from '@renderer/pages/miniSettings/index.vue'
 import mainSettings from '@renderer/pages/miniSettings/main.vue'
+import information from '@renderer/pages/miniSettings/information.vue'
 
 const routes = [
   { path: '/', component: index },
@@ -26,6 +27,10 @@ const routes = [
       {
         path: 'main',
         component: mainSettings
+      },
+      {
+        path: 'information',
+        component: information
       }
     ]
   },

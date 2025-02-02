@@ -45,7 +45,12 @@
     <a-flex
       vertical
       align="flex-end"
-      :style="{ 'padding-left': '256px', 'padding-top': '80px', 'padding-right': '18px' }"
+      :style="{
+        'padding-left': '256px',
+        'padding-top': '80px',
+        'padding-right': '18px',
+        width: '100%'
+      }"
     >
       <router-view></router-view>
     </a-flex>
@@ -91,7 +96,8 @@ function getItem(
 
 const items: ItemType[] = reactive([
   getItem('', 'grp', null, [getItem('主页', '1', h(HomeOutlined))], 'group'),
-  getItem('功能', 'grp', null, [getItem('倒计时', '2'), getItem('日期计算', '3')], 'group')
+  getItem('功能', 'grp', null, [getItem('倒计时', '2'), getItem('日期计算', '3')], 'group'),
+  getItem('其他', 'grp', null, [getItem('详细信息', '4')], 'group')
 ])
 
 // 页面导航
@@ -102,6 +108,8 @@ const handleClick: MenuProps['onClick'] = (e) => {
     route.push('/settings/countdown')
   } else if (e.key === '3') {
     route.push('/settings/days-calculation')
+  } else if (e.key === '4') {
+    route.push('/settings/information')
   }
 }
 

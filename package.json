@@ -24,6 +24,7 @@
     "@electron-toolkit/preload": "^3.0.0",
     "@electron-toolkit/utils": "^3.0.0",
     "electron-updater": "^6.1.7",
+    "hono": "^4.6.20",
     "mica-electron": "^1.5.16"
   },
   "devDependencies": {
