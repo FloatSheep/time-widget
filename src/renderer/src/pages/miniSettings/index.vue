@@ -59,7 +59,14 @@
 <script lang="ts" setup>
 import { reactive, ref, VueElement, h, onMounted } from 'vue'
 import type { MenuProps, ItemType } from 'ant-design-vue'
-import { HomeOutlined, CloseOutlined, MinusOutlined } from '@ant-design/icons-vue'
+import {
+  HomeOutlined,
+  CloseOutlined,
+  MinusOutlined,
+  FieldTimeOutlined,
+  CalendarOutlined,
+  InfoCircleOutlined
+} from '@ant-design/icons-vue'
 import { useRouter } from 'vue-router'
 
 // 获取路由
@@ -96,8 +103,14 @@ function getItem(
 
 const items: ItemType[] = reactive([
   getItem('', 'grp', null, [getItem('主页', '1', h(HomeOutlined))], 'group'),
-  getItem('功能', 'grp', null, [getItem('倒计时', '2'), getItem('日期计算', '3')], 'group'),
-  getItem('其他', 'grp', null, [getItem('详细信息', '4')], 'group')
+  getItem(
+    '功能',
+    'grp',
+    null,
+    [getItem('倒计时', '2', h(FieldTimeOutlined)), getItem('日期计算', '3', h(CalendarOutlined))],
+    'group'
+  ),
+  getItem('其他', 'grp', null, [getItem('详细信息', '4', h(InfoCircleOutlined))], 'group')
 ])
 
 // 页面导航

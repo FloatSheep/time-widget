@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import dayjs from 'dayjs'
 import countDownAudio from '../assets/audio/countDown.wav'
 
@@ -30,8 +30,22 @@ const formatTime = (seconds: number): string => {
 // 初始化总秒数
 const initialTotalSeconds = ref(0)
 
-// 倒计时状态
-const noticed = ref(false)
+// 倒计时播放 / 窗口下滑
+watch(
+  () => progressWidth.value,
+  (value) => {
+    if (value === 0) {
+      try {
+        audioRef.value!.load()
+        audioRef.value!.play()
+        // 直接调用 sendMouseMove
+        ;(window as unknown as theWindow).message.sendMouseMove()
+      } catch (err) {
+        console.error('Audio Error: ', err)
+      }
+    }
+  }
+)
 
 // 更新倒计时和进度条
 const updateCountDown = (currentTime: number) => {
@@ -48,17 +62,6 @@ const updateCountDown = (currentTime: number) => {
       // 倒计时结束
       countDown.value = '00:00:00'
       progressWidth.value = 0 // 进度条归零
-      if (noticed.value === false) {
-        try {
-          audioRef.value?.load()
-          audioRef.value?.play()
-          noticed.value = true
-          // 直接调用 sendMouseMove
-          ;(window as unknown as theWindow).message.sendMouseMove()
-        } catch (err) {
-          console.error('Audio Error: ', err)
-        }
-      }
 
       // 颜色变换
       if (countDownElement.value !== null) {

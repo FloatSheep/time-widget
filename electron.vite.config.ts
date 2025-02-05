@@ -3,6 +3,8 @@ import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import Components from 'unplugin-vue-components/vite'
 import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers'
 import vue from '@vitejs/plugin-vue'
+import { createCSSJSImportPlugin } from 'vite-css-in-js'
+import vueJsx from '@vitejs/plugin-vue-jsx'
 
 export default defineConfig({
   main: {
@@ -18,6 +20,7 @@ export default defineConfig({
       }
     },
     plugins: [
+      vueJsx(),
       vue({
         template: {
           compilerOptions: {
@@ -31,7 +34,8 @@ export default defineConfig({
             importStyle: false
           })
         ]
-      })
+      }),
+      createCSSJSImportPlugin()
     ],
     mode: 'production',
     build: {

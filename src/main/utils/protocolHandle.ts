@@ -63,7 +63,6 @@ app.get('api/countdownAudio', async (c) => {
     const mimeType = metaData.mimeType
 
     const audio = await promises.readFile(audioFile)
-    console.log(`Audio file size: ${audio.length} bytes`)
     return c.body(audio, 200, { 'Content-Type': mimeType, 'Content-Length': String(audio.length) })
   } catch (err) {
     console.error('Error reading file:', err)

@@ -3,17 +3,36 @@ import { onMounted, ref } from 'vue'
 import dayjs, { Dayjs } from 'dayjs'
 import { theWindow } from '../countDown.vue'
 import type { UploadProps, UploadChangeParam } from 'ant-design-vue'
-import { UploadOutlined } from '@ant-design/icons-vue'
+import { FileSearchOutlined } from '@ant-design/icons-vue'
+import { usePopup } from '@renderer/utils/popMessage'
 
 // 倒计时时间
 // https://www.antdv.com/components/time-picker-cn
 const value = ref<Dayjs>(dayjs(new Date()))
+
+const popup = usePopup()
 
 // 倒计时音频上传
 const fileList = ref<UploadProps['fileList']>([])
 const handleChange = (info: UploadChangeParam) => {
   if (info.file.status === 'done') {
     localStorage.setItem('customCountDownAudio', 'true')
+    popup({
+      type: 'success',
+      title: '成功',
+      content: '设置音频完成'
+    })
+
+    return
+  }
+  if (info.file.status === 'error') {
+    popup({
+      type: 'error',
+      title: '错误',
+      content: '设置音频失败'
+    })
+
+    return
   }
 }
 
@@ -60,18 +79,19 @@ onMounted(async () => {
       <span class="configLeft">结束时间</span>
       <a-time-picker v-model:value="value" :style="{ border: '1px solid #616161c4' }" />
     </div>
-    <div class="configItem" style="display: none">
+    <div class="configItem">
       <span class="configLeft">倒计时结束提示音</span>
       <a-upload
         v-model:file-list="fileList"
         list-type="text"
         :max-count="1"
         action="macaron://api/upload"
+        class="uploadCustom"
         @change="handleChange"
       >
         <a-button>
-          <upload-outlined></upload-outlined>
-          Upload
+          <FileSearchOutlined />
+          选择音频
         </a-button>
       </a-upload>
     </div>
@@ -93,5 +113,9 @@ onMounted(async () => {
 .outContainer {
   width: 100%;
   height: fit-content;
+}
+
+.uploadCustom > *:not(:first-child) {
+  display: none;
 }
 </style>
