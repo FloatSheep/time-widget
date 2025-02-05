@@ -4,7 +4,6 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { MicaBrowserWindow, IS_WINDOWS_11, WIN10 } from 'mica-electron'
 import icon from '../../resources/icon.png?asset'
 import { protocolApp } from './utils/protocolHandle'
-import requestMove from './utils/requestMove'
 
 global.globalInstantiated = false
 
@@ -199,12 +198,7 @@ app.whenReady().then(() => {
 
   // 处理自定义协议
   protocol.handle('macaron', async (req) => {
-    const { url } = req
-    const newReq = new Request(
-      `http://localhost${url.split('macaron:/')[1]}`,
-      await requestMove(req)
-    )
-    return protocolApp.fetch(newReq) // 将请求转发给 Hono 处理
+    return protocolApp.fetch(req) // 将请求转发给 Hono 处理
   })
 
   // 初始化托盘

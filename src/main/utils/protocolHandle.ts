@@ -3,9 +3,9 @@ import { app as electronApp } from 'electron'
 import { promises } from 'fs'
 import { join } from 'path'
 
-const app = new Hono()
+const app = new Hono().basePath('//')
 
-app.get('/versions/', (c) => {
+app.get('versions/', (c) => {
   const chromium = process.versions.chrome
   const electron = process.versions.electron
   const node = process.versions.node
@@ -13,7 +13,7 @@ app.get('/versions/', (c) => {
 })
 
 app
-  .post('/api/upload', async (c) => {
+  .post('api/upload', async (c) => {
     try {
       const body = await c.req.formData()
       const file = body.get('file') as File
@@ -53,7 +53,7 @@ app
     )
   })
 
-app.get('/api/countdownAudio', async (c) => {
+app.get('api/countdownAudio', async (c) => {
   try {
     const audioFile = join(electronApp.getPath('userData'), '/countdown/audio_file')
     const metaDataFile = join(electronApp.getPath('userData'), '/countdown/metadata.json')
@@ -69,6 +69,10 @@ app.get('/api/countdownAudio', async (c) => {
     console.error('Error reading file:', err)
     return c.json({ error: 'Error reading file' }, 500)
   }
+})
+
+app.get('bundle/', async (c) => {
+  return c.text('Hello World!!!!!')
 })
 
 app.notFound((c) => {
