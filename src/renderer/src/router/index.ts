@@ -23,6 +23,10 @@ const routes = [
       {
         path: 'info',
         component: () => import('@renderer/pages/miniSettings/items/infoView.vue')
+      },
+      {
+        path: 'advanced',
+        component: () => import('@renderer/pages/miniSettings/items/advancedSettings.vue')
       }
     ]
   }

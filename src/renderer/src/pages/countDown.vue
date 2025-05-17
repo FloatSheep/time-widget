@@ -32,7 +32,12 @@ const initialTotalSeconds = ref(0)
 
 // 倒计时播放 / 窗口下滑
 watch(progressWidth, (value) => {
-  if (value === 0) {
+  if (value === 0 && localStorage.getItem('silentMode') !== 'true') {
+    if (localStorage.getItem('systemNotification') === 'true') {
+      const NOTIFICATION_TITLE = '时间到'
+      const NOTIFICATION_BODY = '啊咧咧，倒计时已经结束了！'
+      new Notification(NOTIFICATION_TITLE, { body: NOTIFICATION_BODY })
+    }
     try {
       audioRef.value!.load()
       audioRef.value!.play()
@@ -63,7 +68,6 @@ const updateCountDown = (currentTime: number) => {
       // 倒计时结束
       countDown.value = '00:00:00'
       progressWidth.value = 0 // 进度条归零
-
       // 颜色变换
       if (countDownElement.value !== null) {
         countDownElement.value.style.color = getCssVariable(

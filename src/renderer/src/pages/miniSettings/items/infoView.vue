@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, onUnmounted } from 'vue'
 import { appConfig } from '@renderer/main'
 
 const versions = ref({
@@ -10,6 +10,15 @@ const versions = ref({
 
 const audioStatus = ref<HTMLElement | null>(null)
 const UITemplateStatus = ref<HTMLElement | null>(null)
+const isOutputed = ref<boolean>(false)
+
+// 用于记录按键序列
+const keySequence = ref<string[]>([])
+
+// 需要匹配的按键序列
+const targetSequence = ['C', 'C', 'D', 'D', 'C']
+
+let handleKeyDown
 
 onMounted(async () => {
   const data = await fetch('macaron://versions')
@@ -24,7 +33,53 @@ onMounted(async () => {
     audioStatus.value!.innerText = '已开启'
   }
 
-  UITemplateStatus.value!.innerText = appConfig.UITemplate
+  if (UITemplateStatus.value) {
+    UITemplateStatus.value!.innerText = appConfig.UITemplate
+  }
+  handleKeyDown = (event: KeyboardEvent) => {
+    // 将按键加入队列
+    keySequence.value.push(event.key.toUpperCase())
+
+    // 只保留最近的5个按键
+    if (keySequence.value.length > targetSequence.length) {
+      keySequence.value.shift()
+    }
+
+    // 检查是否匹配目标序列
+    if (keySequence.value.join('') === targetSequence.join('')) {
+      window.message.send('advanced-tools')
+    }
+  }
+
+  // 添加键盘监听
+  window.addEventListener('keydown', handleKeyDown)
+
+  if (isOutputed.value) {
+    console.log(
+      '%c Tips %c 华生，你发现了盲点！\n 现在，你可以在这里完成修改背景材料等操作 \n 下面的提示会是你的好帮手 \n <material_name> 可以试试别的方式（GayHub）获得哦！',
+      'background:#0F6CBD;color:white;padding:2px 4px;border-radius:2px 0 0 2px;',
+      'background:white;color:#0F6CBD;padding:2px 4px;border-radius:0 2px 2px 0;'
+    )
+
+    console.log(
+      '%c Function %c window.message.invoke("change-material", <material_name>)',
+      'background:#0F6CBD;color:white;padding:2px 4px;border-radius:2px 0 0 2px;',
+      'background:white;color:#0F6CBD;padding:2px 4px;border-radius:0 2px 2px 0;'
+    )
+
+    console.log(
+      '%c Function %c localStorage.setItem("material", <material_name>)',
+      'background:#0F6CBD;color:white;padding:2px 4px;border-radius:2px 0 0 2px;',
+      'background:white;color:#0F6CBD;padding:2px 4px;border-radius:0 2px 2px 0;'
+    )
+
+    isOutputed.value = true
+  }
+})
+
+// 清理副作用
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown)
 })
 </script>
 
