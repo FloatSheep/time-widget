@@ -1,40 +1,31 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import index from '../pages/index.vue'
-import countDown from '../pages/countDown.vue'
-import daysCalculation from '@renderer/pages/daysCalculation.vue'
-import countDownSettings from '@renderer/pages/miniSettings/countDownSettings.vue'
-import daysCalculationSettings from '@renderer/pages/miniSettings/daysCalculationSettings.vue'
-import miniSettingsIndex from '@renderer/pages/miniSettings/index.vue'
-import mainSettings from '@renderer/pages/miniSettings/main.vue'
-import information from '@renderer/pages/miniSettings/information.vue'
 
 const routes = [
-  { path: '/', component: index },
-  { path: '/countdown', component: countDown },
-  { path: '/days-calculation', component: daysCalculation },
+  { path: '/', component: () => import('@renderer/pages/index.vue') },
+  { path: '/countdown', component: () => import('@renderer/pages/countDown.vue') },
+  { path: '/days-calculation', component: () => import('@renderer/pages/daysCalculation.vue') },
   {
     path: '/settings',
-    component: miniSettingsIndex,
+    component: () => import('@renderer/pages/miniSettings/layout.vue'),
     children: [
       {
         path: 'countdown',
-        component: countDownSettings
+        component: () => import('@renderer/pages/miniSettings/items/countDownSettings.vue')
       },
       {
         path: 'days-calculation',
-        component: daysCalculationSettings
+        component: () => import('@renderer/pages/miniSettings/items/daysCalculationSettings.vue')
       },
       {
         path: 'main',
-        component: mainSettings
+        component: () => import('@renderer/pages/miniSettings/main.vue')
       },
       {
-        path: 'information',
-        component: information
+        path: 'info',
+        component: () => import('@renderer/pages/miniSettings/items/infoView.vue')
       }
     ]
-  },
-  { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('../pages/NotFound.vue') }
+  }
 ]
 
 const router = createRouter({

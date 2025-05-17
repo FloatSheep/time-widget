@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { theWindow } from './countDown.vue'
 
 // 定义状态
 const dayShowElement = ref<HTMLElement | null>(null)
@@ -40,7 +39,7 @@ const updateSettingsFromLocalStorage = () => {
   }
 
   if (hasChanged) {
-    ;(window as unknown as theWindow).message.sendMouseMove()
+    window.message.sendMouseMove()
   }
 }
 

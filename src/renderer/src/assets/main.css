@@ -1,9 +1,42 @@
 @import 'lxgw-wenkai-screen-webfont/style.css';
 
+:root {
+  /* 默认浅色模式 */
+  --background-color: #ffffff;
+  --text-color: #000000;
+  --subtext-color: #949494e0;
+  --main-text-color: #000000be;
+  --button-bg-color: #f0f0f0;
+  --countdown-progress-bg: #e6e6e6;
+  --countdown-progress-fill: #0f6cbd;
+  --countdown-end-color: #CB5364;
+  --countdown-end-border-color: #A23238;
+  --countdown-normal-color: #000000be;
+  --countdown-normal-border-color: #7e7d7de0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* 暗色模式 */
+    --background-color: #121212;
+    --text-color: #ffffff;
+    --subtext-color: #aaaaaae0;
+    --main-text-color: #e0e0e0be;
+    --button-bg-color: #2a2a2a;
+    --countdown-progress-bg: #333333;
+    --countdown-progress-fill: #4a90e2;
+    --countdown-end-color: #e95a7c;
+    --countdown-end-border-color: #bf3b4f;
+    --countdown-normal-color: #ffffffcc;
+    --countdown-normal-border-color: #aaaaaae0;
+  }
+}
+
 body {
   font-family: 'LXGW WenKai Screen', sans-serif;
   -webkit-font-smoothing: antialiased;
   user-select: none;
+  color: var(--text-color);
 }
 
 html {
@@ -17,13 +50,13 @@ html {
 }
 
 .subText {
-  color: #949494e0;
+  color: var(--subtext-color);
   font-weight: bold;
   font-size: 30px;
 }
 
 .mainText {
-  color: #000000be;
+  color: var(--main-text-color);
   font-weight: bold;
   font-size: 32px;
 }

@@ -4,6 +4,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { MicaBrowserWindow, IS_WINDOWS_11, WIN10 } from 'mica-electron'
 import icon from '../../resources/icon.png?asset'
 import { protocolApp } from './utils/protocolHandle'
+import { windowsMetadata } from './config/window'
 
 global.globalInstantiated = false
 
@@ -58,6 +59,16 @@ function createWindow(
   mainWindow.setResizable(false)
   /*   mainWindow.webContents.openDevTools() */
 
+  // 加入窗口列表
+  mainWindowList.push(mainWindow)
+
+  // 确保窗口关闭时从列表中移除
+  mainWindow.on('closed', () => {
+    const index = mainWindowList.indexOf(mainWindow)
+    if (index > -1) {
+      mainWindowList.splice(index, 1)
+    }
+  })
   // 没什么用
   mainWindow.webContents.on('before-input-event', (_, input) => {
     if (input.type === 'mouseDown' || input.type === 'mouseUp') {
@@ -94,8 +105,51 @@ function createWindow(
 
   const lastMouseMoveTimestamps = new Map<string, number>()
 
-  // ipc 进程通信（鼠标移动时显示窗口）
-  ipcMain.on('mouse-move', (_event, hash: string) => {
+  // 全局变量，控制是否已滑出
+  let isSlided = false
+
+  // 当前动画结束时间戳，防止短时间内重复触发
+  let lastSlideTime = 0
+
+  // 监听鼠标引起的滑入滑出事件
+  ipcMain.on('request-slide', (_event, payload) => {
+    const now = Date.now()
+
+    // 如果最近500ms内已滑出，则忽略
+    if (now - lastSlideTime < 500 || isSlided) {
+      return
+    }
+
+    isSlided = true
+    lastSlideTime = now
+
+    // 向所有窗口发送 trigger-slide 消息
+    const currentTime = Date.now()
+    const lastTime = lastMouseMoveTimestamps.get(payload.hash) || 0
+
+    // 如果当前时间与上次时间间隔小于200ms，则忽略本次事件
+    if (currentTime - lastTime < 500) {
+      return
+    }
+
+    // 更新时间戳并处理事件
+    lastMouseMoveTimestamps.set(payload.hash, currentTime)
+    clearTimeout(moveToTopTimeout) // 清除计时器
+    animateWindowPosition(mainWindow, xOffset, yOffset + topOffset, animationDuration) // 移动到原来的位置
+    moveToTopTimeout = setTimeout(() => {
+      if (!isMouseInWindow(mainWindow)) {
+        animateWindowPosition(mainWindow, xOffset, movingDistance, animationDuration) // 再次设置计时器
+      }
+    }, 2000)
+
+    // 动画结束后重置状态（假设动画持续1秒）
+    setTimeout(() => {
+      isSlided = false
+    }, 1000)
+  })
+
+  // ipc 进程通信（用于保存配置等的窗口移动）
+  ipcMain.on('win-move', (_event, hash: string) => {
     const currentTime = Date.now()
     const lastTime = lastMouseMoveTimestamps.get(hash) || 0
 
@@ -132,6 +186,9 @@ function easeInOutQuart(x: number): number {
   return x < 0.5 ? 8 * x * x * x * x : 1 - Math.pow(-2 * x + 2, 4) / 2
 }
 
+// 存储所有窗口引用，方便主进程统一操作
+const mainWindowList: BrowserWindow[] = []
+
 // 窗口移动动画
 function animateWindowPosition(
   window: BrowserWindow,
@@ -166,6 +223,17 @@ function animateWindowPosition(
 
   step()
 }
+
+// 添加一个新的 IPC 接收 trigger-slide 事件
+ipcMain.on('trigger-slide', (_event, payload) => {
+  const targetY = payload.targetY ?? 20 // 可选参数，从渲染进程传入目标 Y 值
+
+  // 遍历所有窗口并触发动画
+  mainWindowList.forEach((window) => {
+    const bounds = window.getBounds()
+    animateWindowPosition(window, bounds.x, targetY, 500)
+  })
+})
 
 // ipc 进程通信（在浏览器中打开）
 ipcMain.on('open-url', (_, url) => {
@@ -314,9 +382,8 @@ app.whenReady().then(() => {
   })
 
   const gap = 20 // 设置顶部窗口之间的间隔
-  const windowWidths = [300, 300, 300] // 设置不同窗口的宽度，这样写是 Copilot 教的😭
   const totalWidth =
-    windowWidths.reduce((acc, width) => acc + width, 0) + gap * (windowWidths.length - 1) // 计算总共占用的屏幕宽度
+    windowsMetadata.reduce((acc, meta) => acc + meta.width, 0) + gap * (windowsMetadata.length - 1) // 计算总共占用的屏幕宽度
   const { width } = screen.getPrimaryDisplay().workAreaSize // 获得显示屏幕宽度
 
   // 确保窗口总宽度不超过屏幕宽度，超过不显示顶部窗口
@@ -324,12 +391,10 @@ app.whenReady().then(() => {
     const startX = Math.round((width - totalWidth) / 2) // 除去占用后的剩余宽度
     let currentX = startX
 
-    // 多窗口路由
-    const routes = ['/', '/countdown', '/days-calculation']
     if (!global.globalInstantiated) {
-      windowWidths.forEach((windowWidth, index) => {
-        createWindow(currentX, 0, windowWidth, 100, routes[index]) // 循环创建窗口，并分配不同 hash
-        currentX += windowWidth + gap
+      windowsMetadata.forEach((meta) => {
+        createWindow(currentX, 0, meta.width, 100, meta.route) // 使用 metadata 创建窗口
+        currentX += meta.width + gap // 更新下一个窗口的 X 坐标
       })
       global.globalInstantiated = true
     }

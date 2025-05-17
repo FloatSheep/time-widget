@@ -52,6 +52,7 @@ const popStyles = css`
   position: fixed;
   top: 10px;
   left: 50%;
+  color: #000 !important;
   transform: translateX(-50%);
   z-index: 1000;
 

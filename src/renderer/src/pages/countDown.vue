@@ -31,21 +31,22 @@ const formatTime = (seconds: number): string => {
 const initialTotalSeconds = ref(0)
 
 // 倒计时播放 / 窗口下滑
-watch(
-  () => progressWidth.value,
-  (value) => {
-    if (value === 0) {
-      try {
-        audioRef.value!.load()
-        audioRef.value!.play()
-        // 直接调用 sendMouseMove
-        ;(window as unknown as theWindow).message.sendMouseMove()
-      } catch (err) {
-        console.error('Audio Error: ', err)
-      }
+watch(progressWidth, (value) => {
+  if (value === 0) {
+    try {
+      audioRef.value!.load()
+      audioRef.value!.play()
+      // 直接调用 sendMouseMove
+      window.message.sendMouseMove()
+    } catch (err) {
+      console.error('Audio Error: ', err)
     }
   }
-)
+})
+
+function getCssVariable(element: HTMLElement, variableName: string): string {
+  return getComputedStyle(element).getPropertyValue(variableName).trim()
+}
 
 // 更新倒计时和进度条
 const updateCountDown = (currentTime: number) => {
@@ -65,14 +66,26 @@ const updateCountDown = (currentTime: number) => {
 
       // 颜色变换
       if (countDownElement.value !== null) {
-        countDownElement.value.style.color = '#CB5364'
-        countDownElement.value.style.borderBottomColor = '#A23238'
+        countDownElement.value.style.color = getCssVariable(
+          countDownElement.value,
+          '--countdown-end-color'
+        )
+        countDownElement.value.style.borderBottomColor = getCssVariable(
+          countDownElement.value,
+          '--countdown-end-border-color'
+        )
 
         // 2秒后恢复
         const timeout = setTimeout(() => {
           if (countDownElement.value !== null) {
-            countDownElement.value.style.color = '#000000be'
-            countDownElement.value.style.borderBottomColor = '#7e7d7de0'
+            countDownElement.value.style.color = getCssVariable(
+              countDownElement.value,
+              '--countdown-normal-color'
+            )
+            countDownElement.value.style.borderBottomColor = getCssVariable(
+              countDownElement.value,
+              '--countdown-normal-border-color'
+            )
           }
           clearTimeout(timeout)
         }, 2000)
@@ -83,14 +96,6 @@ const updateCountDown = (currentTime: number) => {
     }
   }
   animationFrameId = requestAnimationFrame(updateCountDown)
-}
-
-// 扩展 Window 类型
-interface theWindow extends Window {
-  message: {
-    sendMouseMove: () => void
-    openUrl: (url: string) => void
-  }
 }
 
 const startCountDown = () => {
@@ -107,6 +112,18 @@ const startCountDown = () => {
   initialTotalSeconds.value = totalSeconds.value > 0 ? totalSeconds.value : 0
   countDown.value = formatTime(totalSeconds.value)
   animationFrameId = requestAnimationFrame(updateCountDown)
+}
+
+// 处理主题颜色变化
+const handleThemeChange = () => {
+  countDownElement.value!.style.color = getCssVariable(
+    countDownElement.value!,
+    '--countdown-normal-color'
+  )
+  countDownElement.value!.style.borderBottomColor = getCssVariable(
+    countDownElement.value!,
+    '--countdown-normal-border-color'
+  )
 }
 
 onMounted(() => {
@@ -139,15 +156,16 @@ onMounted(() => {
       }
     }
   })
+
+  const mediaQueryList = window.matchMedia('(prefers-color-scheme: dark)')
+  handleThemeChange() // 立即执行
+  mediaQueryList.addEventListener('change', handleThemeChange)
 })
 
 onUnmounted(() => {
   cancelAnimationFrame(animationFrameId)
   window.removeEventListener('storage', () => {})
 })
-
-// 导出类型方便复用
-export type { theWindow }
 </script>
 
 <template>
@@ -168,7 +186,7 @@ export type { theWindow }
 <style scoped>
 .countDownProgressBar {
   height: 4px;
-  background-color: #e6e6e6;
+  background-color: var(--countdown-progress-bg);
   width: 100%;
   display: block;
   border-radius: 4px;
@@ -176,7 +194,7 @@ export type { theWindow }
 }
 
 .countDownProgressBarInstance {
-  background-color: #0f6cbd;
+  background-color: var(--countdown-progress-fill);
   transition-timing-function: ease;
   transition-duration: 0.3s;
   transition-property: width;

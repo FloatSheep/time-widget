@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import dayjs, { Dayjs } from 'dayjs'
-import { theWindow } from '../countDown.vue'
 import type { UploadProps, UploadChangeParam } from 'ant-design-vue'
 import { FileSearchOutlined } from '@ant-design/icons-vue'
 import { usePopup } from '@renderer/utils/popMessage'
@@ -50,7 +49,7 @@ const getConfig = (): string | null => {
 const configSave = () => {
   const normalDate = value.value.toDate()
   localStorage.setItem('countDownTime', normalDate.getTime().toString())
-  ;(window as unknown as theWindow).message.sendMouseMove()
+  window.message.sendMouseMove()
 }
 
 // 挂载后加载配置
