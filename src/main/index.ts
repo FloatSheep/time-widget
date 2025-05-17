@@ -1,7 +1,18 @@
-import { app, shell, BrowserWindow, Tray, Menu, screen, ipcMain, protocol } from 'electron'
+import {
+  app,
+  shell,
+  BrowserWindow,
+  Tray,
+  Menu,
+  screen,
+  ipcMain,
+  protocol,
+  nativeTheme,
+  Notification
+} from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import { MicaBrowserWindow, IS_WINDOWS_11, WIN10 } from 'mica-electron'
+import { MicaBrowserWindow, IS_WINDOWS_11 } from 'mica-electron'
 import icon from '../../resources/icon.png?asset'
 import { protocolApp } from './utils/protocolHandle'
 import { windowsMetadata } from './config/window'
@@ -31,6 +42,8 @@ function createWindow(
   const mainWindow = new MicaBrowserWindow({
     width: windowWidth,
     height: windowHeight,
+    maxWidth: windowWidth,
+    maxHeight: windowHeight,
     show: false,
     x: xOffset,
     y: yOffset + topOffset,
@@ -43,21 +56,18 @@ function createWindow(
     frame: false,
     alwaysOnTop: alwaysTop,
     transparent: true,
-    skipTaskbar: true // 移除任务栏图标
+    skipTaskbar: true, // 移除任务栏图标
+    fullscreenable: false
   })
 
-  // 设置窗口背景材料、圆角
+  // 设置窗口圆角
   if (IS_WINDOWS_11) {
-    mainWindow.setMicaEffect()
     mainWindow.setRoundedCorner()
-  } else if (WIN10) {
-    mainWindow.setAcrylic()
   }
 
   // 基本设置
   mainWindow.setMaximizable(false)
   mainWindow.setResizable(false)
-  /*   mainWindow.webContents.openDevTools() */
 
   // 加入窗口列表
   mainWindowList.push(mainWindow)
@@ -67,15 +77,6 @@ function createWindow(
     const index = mainWindowList.indexOf(mainWindow)
     if (index > -1) {
       mainWindowList.splice(index, 1)
-    }
-  })
-  // 没什么用
-  mainWindow.webContents.on('before-input-event', (_, input) => {
-    if (input.type === 'mouseDown' || input.type === 'mouseUp') {
-      mainWindow.setIgnoreMouseEvents(true)
-      setTimeout(() => {
-        mainWindow.setIgnoreMouseEvents(true, { forward: true })
-      }, 100)
     }
   })
 
@@ -187,7 +188,7 @@ function easeInOutQuart(x: number): number {
 }
 
 // 存储所有窗口引用，方便主进程统一操作
-const mainWindowList: BrowserWindow[] = []
+const mainWindowList: MicaBrowserWindow[] = []
 
 // 窗口移动动画
 function animateWindowPosition(
@@ -262,7 +263,7 @@ app.whenReady().then(() => {
   const myTray = new Tray(icon)
 
   // 提出窗口
-  let settingWindow
+  let settingWindow: MicaBrowserWindow | null = null
 
   // 防止打开多个设置界面
   let instantiate = false
@@ -302,6 +303,8 @@ app.whenReady().then(() => {
           settingWindow = new MicaBrowserWindow({
             width: windowWidth,
             height: windowHeight,
+            maxWidth: windowWidth,
+            maxHeight: windowHeight,
             show: true,
             x,
             y,
@@ -314,7 +317,8 @@ app.whenReady().then(() => {
             frame: false, // 关闭 chrome 外壳
             alwaysOnTop: false, // 关闭置顶
             transparent: true,
-            skipTaskbar: false
+            skipTaskbar: false,
+            fullscreenable: false
           })
 
           instantiate = true
@@ -327,20 +331,16 @@ app.whenReady().then(() => {
 
           settingWindow.setIgnoreMouseEvents(false)
 
-          // 设置窗口背景材料、圆角
+          // 设置窗口圆角
           if (IS_WINDOWS_11) {
-            settingWindow.setMicaEffect()
             settingWindow.setRoundedCorner()
-          } else if (WIN10) {
-            settingWindow.setAcrylic()
           }
 
           // 基本设置
           settingWindow.setMaximizable(false)
           settingWindow.setResizable(false)
-          /*           settingWindow.webContents.openDevTools() */
         } else {
-          settingWindow.show()
+          settingWindow!.show()
         }
       }
     },
@@ -353,11 +353,98 @@ app.whenReady().then(() => {
   ])
 
   ipcMain.on('close-button', () => {
-    settingWindow.close()
+    settingWindow!.close()
     instantiate = false
   })
   ipcMain.on('mini-size-button', () => {
-    settingWindow.minimize()
+    settingWindow!.minimize()
+  })
+  ipcMain.on('show-notification', (_event, data) => {
+    new Notification(data).show()
+  })
+  ipcMain.on('advanced-tools', () => {
+    settingWindow?.webContents.openDevTools({
+      mode: 'detach'
+    })
+  })
+  ipcMain.handle('change-material', (_event, material: string) => {
+    try {
+      switch (material) {
+        case 'mica':
+          settingWindow?.setMicaEffect()
+          mainWindowList.map((window) => {
+            window.setMicaEffect()
+          })
+          return true
+        case 'acrylic-7':
+          settingWindow?.setAcrylic()
+          mainWindowList.map((window) => {
+            window.setAcrylic()
+          })
+          return true
+        case 'blur':
+          settingWindow?.setBlur()
+          mainWindowList.map((window) => {
+            window.setBlur()
+          })
+          return true
+        case 'mica-tabbed':
+          settingWindow?.setMicaTabbedEffect()
+          mainWindowList.map((window) => {
+            window.setMicaTabbedEffect()
+          })
+          return true
+        case 'acrylic-11':
+          settingWindow?.setMicaAcrylicEffect()
+          mainWindowList.map((window) => {
+            window.setMicaAcrylicEffect()
+          })
+          return true
+        case 'none':
+          settingWindow?.setTransparent()
+          mainWindowList.map((window) => {
+            window.setTransparent()
+          })
+          return true
+        default:
+          return false
+      }
+    } catch (error) {
+      console.log(error)
+      return false
+    }
+  })
+  ipcMain.handle('change-appearance', (_event, theme: string) => {
+    try {
+      switch (theme) {
+        case 'dark':
+          nativeTheme.themeSource = 'dark'
+          settingWindow?.setDarkTheme()
+          mainWindowList.map((window) => {
+            window.setDarkTheme()
+          })
+          return true
+        case 'light':
+          nativeTheme.themeSource = 'light'
+          settingWindow?.setLightTheme()
+          mainWindowList.map((window) => {
+            window.setLightTheme()
+          })
+          return true
+        case 'system':
+          nativeTheme.themeSource = 'system'
+          settingWindow?.setAutoTheme()
+          mainWindowList.map((window) => {
+            window.setAutoTheme()
+          })
+          return true
+        default:
+          return false
+      }
+    } catch (err) {
+      console.log(err)
+      return false
+    }
   })
 
   myTray.setToolTip('Time Widget!')

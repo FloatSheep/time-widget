@@ -42,7 +42,8 @@ import {
   HomeOutlined,
   FieldTimeOutlined,
   CalendarOutlined,
-  InfoCircleOutlined
+  InfoCircleOutlined,
+  SettingOutlined
 } from '@ant-design/icons-vue'
 import { useRouter } from 'vue-router'
 
@@ -79,7 +80,13 @@ const items: ItemType[] = reactive([
     [getItem('倒计时', '2', h(FieldTimeOutlined)), getItem('日期计算', '3', h(CalendarOutlined))],
     'group'
   ),
-  getItem('其他', 'grp', null, [getItem('详细信息', '4', h(InfoCircleOutlined))], 'group')
+  getItem(
+    '其他',
+    'grp',
+    null,
+    [getItem('高级设置', '4', h(SettingOutlined)), getItem('详细信息', '5', h(InfoCircleOutlined))],
+    'group'
+  )
 ])
 
 // 页面导航
@@ -91,6 +98,8 @@ const handleClick: MenuProps['onClick'] = (e) => {
   } else if (e.key === '3') {
     route.push('/settings/days-calculation')
   } else if (e.key === '4') {
+    route.push('/settings/advanced')
+  } else if (e.key === '5') {
     route.push('/settings/info')
   }
 }
