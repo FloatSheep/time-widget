@@ -224,17 +224,6 @@ function animateWindowPosition(
   step()
 }
 
-// 添加一个新的 IPC 接收 trigger-slide 事件
-ipcMain.on('trigger-slide', (_event, payload) => {
-  const targetY = payload.targetY ?? 20 // 可选参数，从渲染进程传入目标 Y 值
-
-  // 遍历所有窗口并触发动画
-  mainWindowList.forEach((window) => {
-    const bounds = window.getBounds()
-    animateWindowPosition(window, bounds.x, targetY, 500)
-  })
-})
-
 // ipc 进程通信（在浏览器中打开）
 ipcMain.on('open-url', (_, url) => {
   shell.openExternal(url)

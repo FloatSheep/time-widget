@@ -8,7 +8,7 @@ declare global {
       closeButton: () => void
       miniSizeButton: () => void
       sendMouseMove: () => void
-      openUrl: () => void
+      openUrl: (url: string) => void
     }
   }
 }
