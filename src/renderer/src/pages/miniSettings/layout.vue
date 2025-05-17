@@ -1,28 +1,5 @@
 <template>
-  <a-page-header
-    title="设置"
-    sub-title="配置 Time Widget！"
-    :style="{
-      overflow: 'auto',
-      width: '100%',
-      height: '80px',
-      position: 'fixed',
-      left: 0,
-      top: 0,
-      bottom: 0,
-      '-webkit-app-region': 'drag',
-      'z-index': '9999'
-    }"
-  >
-    <template #extra>
-      <a-button key="1" style="-webkit-app-region: no-drag" @click="miniSizeClick"
-        ><MinusOutlined
-      /></a-button>
-      <a-button key="2" style="-webkit-app-region: no-drag" @click="closeClick"
-        ><CloseOutlined
-      /></a-button>
-    </template>
-  </a-page-header>
+  <Header />
   <a-flex justify="flex-start">
     <a-menu
       v-model:open-keys="openKeys"
@@ -47,7 +24,7 @@
       align="flex-end"
       :style="{
         'padding-left': '256px',
-        'padding-top': '80px',
+        'padding-top': '1.2rem',
         'padding-right': '18px',
         width: '100%'
       }"
@@ -57,12 +34,12 @@
   </a-flex>
 </template>
 <script lang="ts" setup>
+import Header from './particle/header.vue'
+
 import { reactive, ref, VueElement, h, onMounted } from 'vue'
 import type { MenuProps, ItemType } from 'ant-design-vue'
 import {
   HomeOutlined,
-  CloseOutlined,
-  MinusOutlined,
   FieldTimeOutlined,
   CalendarOutlined,
   InfoCircleOutlined
@@ -74,14 +51,6 @@ const route = useRouter()
 
 const selectedKeys = ref<string[]>(['1'])
 const openKeys = ref<string[]>(['sub1'])
-
-// 扩展 Window 类型
-interface theWindow extends Window {
-  message: {
-    closeButton: () => void
-    miniSizeButton: () => void
-  }
-}
 
 // 导航栏
 // https://www.antdv.com/components/menu-cn
@@ -122,7 +91,7 @@ const handleClick: MenuProps['onClick'] = (e) => {
   } else if (e.key === '3') {
     route.push('/settings/days-calculation')
   } else if (e.key === '4') {
-    route.push('/settings/information')
+    route.push('/settings/info')
   }
 }
 
@@ -130,16 +99,6 @@ const handleClick: MenuProps['onClick'] = (e) => {
 onMounted(() => {
   route.push('/settings/main')
 })
-
-// 关闭程序
-const closeClick = () => {
-  ;(window as unknown as theWindow).message.closeButton()
-}
-
-// 最小化程序
-const miniSizeClick = () => {
-  ;(window as unknown as theWindow).message.miniSizeButton()
-}
 </script>
 
 <style scoped>

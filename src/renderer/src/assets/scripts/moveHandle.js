@@ -30,10 +30,17 @@ function localSendMouseMove() {
     // 如果当前没有绑定事件处理函数，则绑定新的防抖函数
     const debouncedHandler = debounce(
       () => {
-        window.message.sendMouseMove(currentHash)
+        const currentHash = window.location.hash
+        const windowId = window.__WINDOW_ID__ || 'default'
+
+        window.message.send('request-slide', {
+          hash: currentHash,
+          windowId,
+          targetY: 20
+        })
       },
       200,
-      true // 首次立即执行
+      true
     )
     currentMouseMoveHandler = { hash: currentHash, handler: debouncedHandler }
     document.addEventListener('mousemove', debouncedHandler)
