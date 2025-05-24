@@ -347,6 +347,7 @@ app.whenReady().then(() => {
 
   ipcMain.on('close-button', () => {
     settingWindow!.close()
+    settingWindow!.destroy()
     instantiate = false
   })
   ipcMain.on('mini-size-button', () => {
