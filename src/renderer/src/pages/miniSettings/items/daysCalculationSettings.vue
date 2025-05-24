@@ -50,7 +50,7 @@ onMounted(async () => {
       <span class="configLeft">结束时间</span>
       <a-date-picker
         v-model:value="endDay"
-        :style="{ border: '1px solid #616161c4' }"
+        :style="{ width: '186px', border: '1px solid #616161c4' }"
         placement="bottomLeft"
       />
     </div>

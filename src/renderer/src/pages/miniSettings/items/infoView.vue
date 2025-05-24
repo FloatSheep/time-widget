@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, onUnmounted } from 'vue'
 import { appConfig } from '@renderer/main'
+import { selfConsole } from '@renderer/utils/console'
 
 const versions = ref({
   chromium: '',
@@ -10,7 +11,6 @@ const versions = ref({
 
 const audioStatus = ref<HTMLElement | null>(null)
 const UITemplateStatus = ref<HTMLElement | null>(null)
-const isOutputed = ref<boolean>(false)
 
 // 用于记录按键序列
 const keySequence = ref<string[]>([])
@@ -36,6 +36,26 @@ onMounted(async () => {
   if (UITemplateStatus.value) {
     UITemplateStatus.value!.innerText = appConfig.UITemplate
   }
+
+  // 函数定义
+  window.changeMaterial = async (material: string) => {
+    if (!material) {
+      throw new Error('请提供材料')
+    }
+    switch (material) {
+      case 'acrylic-7':
+        selfConsole.log('Tips', 'Acrylic(Win7+) 没有暗色与浅色切换适配')
+        break
+      case 'blur':
+        selfConsole.log('Tips', 'Blur(Win7+) 于高版本 Windows 会出现黑背景的问题')
+        break
+    }
+    await window.message.invoke('change-material', material)
+    localStorage.setItem('material', material)
+    return true
+  }
+
+  // 键盘监听
   handleKeyDown = (event: KeyboardEvent) => {
     // 将按键加入队列
     keySequence.value.push(event.key.toUpperCase())
@@ -47,39 +67,31 @@ onMounted(async () => {
 
     // 检查是否匹配目标序列
     if (keySequence.value.join('') === targetSequence.join('')) {
-      window.message.send('advanced-tools')
+      window.message.invoke('advanced-tools').then((e) => {
+        if (e) {
+          selfConsole.log(
+            'Tips',
+            '华生，你发现了盲点！\n 现在，你可以在这里完成修改背景材料等操作 \n 下面的提示会是你的好帮手哦！'
+          )
+          selfConsole.log(
+            'Parameters',
+            '<material_name> 接受字符串: mica / mica-tabbed / acrylic-11 / acrylic-7 / blur / none'
+          )
+          selfConsole.log('Function', 'await changeMaterial(<material_name>)')
+          selfConsole.warn('Warning', '当你切换页面后，该函数将被销毁')
+        }
+      })
     }
   }
 
   // 添加键盘监听
   window.addEventListener('keydown', handleKeyDown)
-
-  if (isOutputed.value) {
-    console.log(
-      '%c Tips %c 华生，你发现了盲点！\n 现在，你可以在这里完成修改背景材料等操作 \n 下面的提示会是你的好帮手 \n <material_name> 可以试试别的方式（GayHub）获得哦！',
-      'background:#0F6CBD;color:white;padding:2px 4px;border-radius:2px 0 0 2px;',
-      'background:white;color:#0F6CBD;padding:2px 4px;border-radius:0 2px 2px 0;'
-    )
-
-    console.log(
-      '%c Function %c window.message.invoke("change-material", <material_name>)',
-      'background:#0F6CBD;color:white;padding:2px 4px;border-radius:2px 0 0 2px;',
-      'background:white;color:#0F6CBD;padding:2px 4px;border-radius:0 2px 2px 0;'
-    )
-
-    console.log(
-      '%c Function %c localStorage.setItem("material", <material_name>)',
-      'background:#0F6CBD;color:white;padding:2px 4px;border-radius:2px 0 0 2px;',
-      'background:white;color:#0F6CBD;padding:2px 4px;border-radius:0 2px 2px 0;'
-    )
-
-    isOutputed.value = true
-  }
 })
 
 // 清理副作用
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown)
+  window.changeMaterial = null
 })
 </script>
 
@@ -127,37 +139,6 @@ onUnmounted(() => {
 .outContainer {
   width: 100%;
   height: fit-content;
-}
-
-.amylase-mica {
-  background: #f7f9fcdb;
-  backdrop-filter: blur(40px);
-  background-blend-mode: overlay;
-}
-
-.amylase-card {
-  height: fit-content;
-  box-shadow:
-    0 0 2px rgba(0, 0, 0, 0.12),
-    0 2px 4px rgba(0, 0, 0, 0.14);
-  flex-direction: column;
-  display: flex;
-  position: relative;
-  box-sizing: border-box;
-  overflow: hidden;
-  border-radius: 11px;
-  border: 2px solid #d1d1d1;
-  padding: 18px;
-  transition: all 100ms cubic-bezier(0.33, 0, 0.67, 1);
-  border-width: thin;
-  cursor: default;
-  line-height: 1.5rem;
-  margin: 24px 0 24px 0;
-}
-
-.amylase-card:hover {
-  background-color: #fff;
-  box-shadow: 0 8px 16px rgb(0 0 0 / 14%);
 }
 
 .amylase-divide {

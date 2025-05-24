@@ -18,7 +18,7 @@ const routes = [
       },
       {
         path: 'main',
-        component: () => import('@renderer/pages/miniSettings/main.vue')
+        component: () => import('@renderer/pages/miniSettings/content.vue')
       },
       {
         path: 'info',

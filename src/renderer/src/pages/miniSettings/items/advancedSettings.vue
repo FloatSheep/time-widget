@@ -115,19 +115,18 @@ watch(stateControl.systemNotification.enabled, () => {
   <div class="outContainer">
     <h2 class="mainText">外观</h2>
     <div class="configItem">
-      <span style="width: 64px; display: block">主题偏好</span>
-      <a-tooltip placement="topLeft">
-        <template #title>
-          调整此设置可能导致
-          <strong style="color: var(--countdown-end-border-color)">页面重载</strong>
-        </template>
-        <QuestionCircleOutlined class="configIcon" />
-      </a-tooltip>
+      <div class="configTipIcon">
+        主题偏好
+        <a-tooltip placement="topLeft">
+          <template #title> 调整为你喜欢的颜色主题 </template>
+          <QuestionCircleOutlined class="configIcon" />
+        </a-tooltip>
+      </div>
       <a-space>
         <a-select
           ref="select"
           :value="stateControl.appearance"
-          style="width: 150px; border-radius: 6px"
+          class="configSection"
           :style="{ border: '1px solid #616161c4' }"
           @change="changeHandler.appearance"
         >
@@ -138,27 +137,31 @@ watch(stateControl.systemNotification.enabled, () => {
       </a-space>
     </div>
     <div class="configItem">
-      <span>背景材料</span>
-      <a-tooltip placement="topLeft">
-        <template #title>
-          Blur(Win7+)、Acrylic(Win7+) 等背景材料因过老未加入列表，或许
-          <code>CCDDC</code> 是神奇字符哦
-        </template>
-        <QuestionCircleOutlined class="configIcon" />
-      </a-tooltip>
+      <div class="configTipIcon">
+        背景材料
+        <a-tooltip placement="topLeft">
+          <template #title>
+            Blur(Win7+)、Acrylic(Win7+) 等背景材料因过老未加入列表，或许
+            <strong style="color: var(--countdown-end-color)">CCDDC</strong> 是神奇字符哦
+          </template>
+          <QuestionCircleOutlined class="configIcon" />
+        </a-tooltip>
+      </div>
 
       <a-space>
         <a-select
           ref="select"
           :value="stateControl.material"
           :size="'middle'"
-          style="width: 150px; border-radius: 6px"
+          class="configSection"
           :style="{ border: '1px solid #616161c4' }"
           @change="changeHandler.material"
         >
           <a-select-option value="mica">Mica</a-select-option>
           <a-select-option value="mica-tabbed">Mica 变体</a-select-option>
           <a-select-option value="acrylic-11">亚克力(Win11+)</a-select-option>
+          <a-select-option value="acrylic-7" style="display: none">亚克力(Win7+)</a-select-option>
+          <a-select-option value="blur" style="display: none">Blur</a-select-option>
           <a-select-option value="none">透明</a-select-option>
         </a-select>
       </a-space>
@@ -166,19 +169,23 @@ watch(stateControl.systemNotification.enabled, () => {
 
     <h2 class="mainText">行为</h2>
     <div class="configItem">
-      <span style="width: 64px; display: block">静默模式</span>
-      <a-tooltip placement="topLeft">
-        <template #title> 倒计时结束后无任何操作 </template>
-        <QuestionCircleOutlined class="configIcon" />
-      </a-tooltip>
+      <div class="configTipIcon">
+        静默模式
+        <a-tooltip placement="topLeft">
+          <template #title> 倒计时结束后无任何操作 </template>
+          <QuestionCircleOutlined class="configIcon" />
+        </a-tooltip>
+      </div>
       <a-switch v-model:checked="stateControl.silentMode.value" />
     </div>
     <div class="configItem">
-      <span style="width: 64px; display: block">系统通知</span>
-      <a-tooltip placement="topLeft">
-        <template #title> 倒计时结束后显示系统通知 </template>
-        <QuestionCircleOutlined class="configIcon" />
-      </a-tooltip>
+      <div class="configTipIcon">
+        系统通知
+        <a-tooltip placement="topLeft">
+          <template #title> 倒计时结束后显示系统通知 </template>
+          <QuestionCircleOutlined class="configIcon" />
+        </a-tooltip>
+      </div>
       <a-switch
         v-model:checked="stateControl.systemNotification.enabled.value"
         :disabled="stateControl.systemNotification.disabled.value"
@@ -205,5 +212,14 @@ watch(stateControl.systemNotification.enabled, () => {
 
 .outContainer {
   width: 100%;
+}
+
+.configTipIcon {
+  display: inline-flex;
+}
+
+.configSection {
+  width: 160px;
+  border-radius: 6px;
 }
 </style>
