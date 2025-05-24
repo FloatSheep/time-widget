@@ -1,6 +1,6 @@
 {
   "name": "time-widget",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "A Time Widget Built Using Electron Technology",
   "main": "./out/main/index.js",
   "author": "FloatSheep",
