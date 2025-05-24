@@ -69,17 +69,6 @@ function createWindow(
   mainWindow.setMaximizable(false)
   mainWindow.setResizable(false)
 
-  // 加入窗口列表
-  mainWindowList.push(mainWindow)
-
-  // 确保窗口关闭时从列表中移除
-  mainWindow.on('closed', () => {
-    const index = mainWindowList.indexOf(mainWindow)
-    if (index > -1) {
-      mainWindowList.splice(index, 1)
-    }
-  })
-
   // 显示窗口
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
@@ -187,9 +176,6 @@ function easeInOutQuart(x: number): number {
   return x < 0.5 ? 8 * x * x * x * x : 1 - Math.pow(-2 * x + 2, 4) / 2
 }
 
-// 存储所有窗口引用，方便主进程统一操作
-const mainWindowList: MicaBrowserWindow[] = []
-
 // 窗口移动动画
 function animateWindowPosition(
   window: BrowserWindow,
@@ -289,7 +275,7 @@ app.whenReady().then(() => {
     {
       label: '设置',
       click: () => {
-        if (!instantiate) {
+        const createSettingsWindow = () => {
           const { width, height } = screen.getPrimaryDisplay().workAreaSize
 
           // 设置窗口的尺寸
@@ -321,8 +307,6 @@ app.whenReady().then(() => {
             fullscreenable: false
           })
 
-          instantiate = true
-
           if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
             settingWindow.loadURL(`${process.env['ELECTRON_RENDERER_URL']}#/settings`)
           } else {
@@ -339,8 +323,17 @@ app.whenReady().then(() => {
           // 基本设置
           settingWindow.setMaximizable(false)
           settingWindow.setResizable(false)
+        }
+        if (!instantiate) {
+          createSettingsWindow()
+          instantiate = true
         } else {
-          settingWindow!.show()
+          try {
+            settingWindow!.show()
+          } catch {
+            instantiate = false
+            createSettingsWindow()
+          }
         }
       }
     },
@@ -375,6 +368,7 @@ app.whenReady().then(() => {
   })
   ipcMain.handle('change-material', (_event, material: string) => {
     try {
+      const mainWindowList = MicaBrowserWindow.getAllWindows() as MicaBrowserWindow[]
       switch (material) {
         case 'mica':
           settingWindow?.setMicaEffect()
@@ -422,6 +416,7 @@ app.whenReady().then(() => {
   })
   ipcMain.handle('change-appearance', (_event, theme: string) => {
     try {
+      const mainWindowList = MicaBrowserWindow.getAllWindows() as MicaBrowserWindow[]
       switch (theme) {
         case 'dark':
           nativeTheme.themeSource = 'dark'
