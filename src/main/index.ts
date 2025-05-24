@@ -362,10 +362,16 @@ app.whenReady().then(() => {
   ipcMain.on('show-notification', (_event, data) => {
     new Notification(data).show()
   })
-  ipcMain.on('advanced-tools', () => {
-    settingWindow?.webContents.openDevTools({
-      mode: 'detach'
-    })
+  ipcMain.handle('advanced-tools', () => {
+    try {
+      settingWindow?.webContents.openDevTools({
+        mode: 'detach'
+      })
+
+      return true
+    } catch (err) {
+      return false
+    }
   })
   ipcMain.handle('change-material', (_event, material: string) => {
     try {

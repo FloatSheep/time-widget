@@ -1,9 +1,9 @@
-import { ElectronAPI } from '@electron-toolkit/preload'
+export {}
 
 declare global {
   interface Window {
-    electron: ElectronAPI
-    api: unknown
+    /** 用于切换背景材料，仅在特定页面存在 */
+    changeMaterial: null | ((material: string) => void)
     message: {
       /** 用于关闭 Electron 窗口 */
       closeButton: () => void
@@ -15,7 +15,7 @@ declare global {
       openUrl: (url: string) => void
       /** 发送任意 IPC 信息到通道（invoke） */
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      invoke: (channel: string, data: any) => Promise<unknown>
+      invoke: (channel: string, data?: any) => Promise<unknown>
       /** 发送任意 IPC 信息到通道（send） */
       send: (channel: string, data?: unknown) => void
     }
