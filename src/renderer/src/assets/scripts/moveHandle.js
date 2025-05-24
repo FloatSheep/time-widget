@@ -1,3 +1,4 @@
+// 防抖
 function debounce(func, wait, immediate = false) {
   let timeout
   return function (...args) {
