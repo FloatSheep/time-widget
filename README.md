@@ -4,7 +4,9 @@
 
 本软件开发过程中有使用 Copilot
 
-针对 Windows 构建，其他平台未做测试
+仅为 Windows 构建，其他平台可能无法使用
+
+> 使用了 依赖 Windows API 的原生库
 
 **重要：Windows 11 及以上版本体验更完整**
 
